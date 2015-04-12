@@ -6,7 +6,7 @@
 package main
 
 import (
-	"ProgrammingInGo/stack"
+	"ProgrammingInGo/chp01/stack"
 	"fmt"
 )
 
