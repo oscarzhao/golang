@@ -28,6 +28,16 @@ func TestMatchIpStrict(t *testing.T) {
 	}
 }
 
+func TestParseDockerImages(t *testing.T) {
+	should_success := []string{
+		"gcr.io/google-containers/serve_hostname                             latest                                     4cf4c64c9b03        10 months ago       4.522 MB",
+	}
+	for _, row := range should_success {
+		if image, err := ParseDockerImage(row); err != nil {
+			t.Errorf("should succeed to get image name from \n\"%s\"\n, but got an error:%s\n", image, err)
+		}
+	}
+}
 func TestOthers(t *testing.T) {
 	match, _ := regexp.MatchString("p([a-z]+)ch", "peach")
 	fmt.Println(match)
