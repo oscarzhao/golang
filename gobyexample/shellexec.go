@@ -2,8 +2,8 @@ package gobyexample
 
 import (
 	"errors"
-  "os/exec"
 	"io/ioutil"
+	"os/exec"
 )
 
 // report all error information to error
