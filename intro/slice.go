@@ -4,7 +4,7 @@
  *  @purpose:  1. strange behavior of slice, 2. diff between slice,array
  *  @explanation:  blog.golang.org/go-slices-usage-and-internals
  ************************************************************************/
-package main
+package intro
 
 import (
 	"fmt"

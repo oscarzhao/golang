@@ -1,4 +1,4 @@
-package main
+package chp01
 
 import (
 	"fmt"

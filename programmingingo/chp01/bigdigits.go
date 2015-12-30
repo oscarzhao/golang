@@ -3,7 +3,7 @@
  *  @date created:  2015-04-10
  *  @purpose:       1. 2-d slice
  ************************************************************************/
-package main
+package chp01
 
 import (
 	"fmt"
