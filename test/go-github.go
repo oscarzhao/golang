@@ -1,5 +1,9 @@
 package main
 
+/*
+A tool to clone/pull code from github.com to local
+Currently, it only support public repos
+*/
 import (
 	"bytes"
 	"flag"
@@ -12,9 +16,12 @@ import (
 )
 
 var (
+	// Account public github.com account
 	Account string
-	DstDir  string
-	Action  string
+	// DstDir root directory code shall be cloned into, or shall pull
+	DstDir string
+	// Action clone or pull
+	Action string
 )
 
 func init() {
@@ -33,12 +40,11 @@ func main() {
 		return
 	}
 	for _, repo := range repos {
-		cloneUrl := fmt.Sprintf("https://github.com/%s/%s", Account, *repo.Name)
 		var stdout, stderr bytes.Buffer
 		var cmd *exec.Cmd
 		switch Action {
 		case "clone":
-			cmd = exec.Command("git", "clone", cloneUrl)
+			cmd = exec.Command("git", "clone", fmt.Sprintf("https://github.com/%s/%s", Account, *repo.Name))
 			cmd.Dir = filepath.Join(DstDir, Account)
 		case "pull":
 			workdir := filepath.Join(DstDir, Account, *repo.Name)
