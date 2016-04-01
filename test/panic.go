@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"runtime"
+)
 
 func main() {
 	f()
@@ -25,8 +28,11 @@ func g(i int) {
 }
 
 func recoverContent() {
-		fmt.Println("calling recoverContent")
-		if r := recover(); r != nil {
-			fmt.Println("Recovered in f", r)
-		}
+	fmt.Println("calling recoverContent")
+	if r := recover(); r != nil {
+		fmt.Printf("Internal error: %v", r)
+		buf := make([]byte, 1<<16)
+		stackSize := runtime.Stack(buf, true)
+		fmt.Printf("%s\n", string(buf[0:stackSize]))
 	}
+}
