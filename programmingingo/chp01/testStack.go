@@ -6,8 +6,8 @@
 package chp01
 
 import (
-	"github.com/Oscarzhao/golang/programmingingo/chp01/stack"
 	"fmt"
+	"github.com/Oscarzhao/golang/programmingingo/chp01/stack"
 )
 
 func main() {

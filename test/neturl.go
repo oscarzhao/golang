@@ -19,6 +19,6 @@ func main() {
 		relnum2, _ := url.Parse("helpme")
 		fmt.Printf("resolve /helpme: %v\n", baseUrl.ResolveReference(relnum1))
 		fmt.Printf("resolve helpme: %v\n", baseUrl.ResolveReference(relnum2))
-		
+
 	}
 }
