@@ -1,11 +1,12 @@
 package main
+
 /**
  * marshal a struct into a html displayable json string
  */
 import (
 	"encoding/json"
-	"log"
 	"fmt"
+	"log"
 )
 
 func main() {
