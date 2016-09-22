@@ -10,13 +10,13 @@ import (
 )
 
 const (
-	imaphost = "imap.exmail.qq.com" // receive mail
-	imapport = 143                  // receive mail
-	smtphost = "smtp.exmail.qq.com" // send mail
-	smtpport = 25                   // send mail
-	identity = "Oscar"
-	user     = "shuailong@tenxcloud.com"
-	pass     = "xue1227xue"
+	ImapHost       = "imap.exmail.qq.com" // receive mail
+	ImapPortSecure = 993                  //receive mail
+	smtphost       = "smtp.exmail.qq.com" // send mail
+	smtpport       = 25                   // send mail
+	identity       = "Oscar"
+	user           = "shuailong@tenxcloud.com"
+	pass           = "xxx"
 )
 
 // SendMail enables a user to send mail to any mails
