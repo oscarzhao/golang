@@ -1,6 +1,7 @@
 package mail
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 )
@@ -33,6 +34,20 @@ func TestReceive(t *testing.T) {
 		t.Fatalf("list mail box fails, error:%s\n", err)
 	}
 	for _, m := range messages {
+		bytes, err := json.MarshalIndent(m.BodyStructure, "", "  ")
+		if err != nil {
+			t.Errorf("err marshal message: %s\n", err)
+		} else {
+			t.Logf("body structure: \n%s\n", bytes)
+		}
+
+		bytes, err = json.MarshalIndent(m.Envelope, "", "  ")
+		if err != nil {
+			t.Errorf("err marshal message: %s\n", err)
+		} else {
+			t.Logf("Envelope : \n%s\n", bytes)
+		}
+
 		t.Logf("seq num:%#v\n", m.SeqNum)
 
 		decoded, err := decode(m.Envelope.Subject)
