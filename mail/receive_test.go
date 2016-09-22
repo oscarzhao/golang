@@ -8,8 +8,8 @@ import (
 func TestListBoxes(t *testing.T) {
 	mc := MailClient{
 		addr: fmt.Sprintf("%s:%d", ImapHost, ImapPortSecure),
-		user: user,
-		pass: pass,
+		user: User,
+		pass: Pass,
 	}
 	boxes, err := mc.ListMailBox()
 	if err != nil {
@@ -25,8 +25,8 @@ func TestReceive(t *testing.T) {
 	num := uint32(1)
 	mc := MailClient{
 		addr: fmt.Sprintf("%s:%d", ImapHost, ImapPortSecure),
-		user: "shuailong@tenxcloud.com",
-		pass: "xue1227xue",
+		user: User,
+		pass: Pass,
 	}
 	messages, err := mc.Receive(num)
 	if err != nil {
