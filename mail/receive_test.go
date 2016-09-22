@@ -49,12 +49,7 @@ func TestReceive(t *testing.T) {
 		}
 
 		t.Logf("seq num:%#v\n", m.SeqNum)
-
-		decoded, err := decode(m.Envelope.Subject)
-		if err != nil {
-			t.Fatalf("decode subject: %s failed, error:%s\n", m.Envelope.Subject, err)
-		}
-		t.Logf("\nseq number: %d\nsubject: %s\ndecoded: %s\n\n", m.SeqNum, m.Envelope.Subject, decoded)
+		t.Logf("\nseq number: %d\nsubject: %s\n\n", m.SeqNum, m.Envelope.Subject)
 	}
 	// t.Logf("messages: %#v\n", messages)
 }

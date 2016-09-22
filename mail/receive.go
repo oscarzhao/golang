@@ -78,15 +78,36 @@ func (mc *MailClient) Receive(n uint32) ([]imap.Message, error) {
 	done := make(chan error, 1)
 	go func() {
 		// done <- c.Fetch(seqset, []string{imap.EnvelopeMsgAttr, imap.BodyMsgAttr, imap.SizeMsgAttr}, messages)
-		done <- c.Fetch(seqset, []string{imap.BodyMsgAttr, imap.EnvelopeMsgAttr}, messages)
+		done <- c.Fetch(seqset, []string{imap.BodyMsgAttr, imap.EnvelopeMsgAttr, imap.BodyStructureMsgAttr}, messages)
 	}()
 
 	var msgs []imap.Message
 	for msg := range messages {
+		if msg.Envelope != nil {
+			if bytes, err := decode(msg.Envelope.Subject); err == nil {
+				msg.Envelope.Subject = string(bytes)
+			}
+			msg.Envelope.From = decodeArrs(msg.Envelope.From)
+			msg.Envelope.To = decodeArrs(msg.Envelope.To)
+			msg.Envelope.Sender = decodeArrs(msg.Envelope.Sender)
+			msg.Envelope.ReplyTo = decodeArrs(msg.Envelope.ReplyTo)
+			msg.Envelope.Cc = decodeArrs(msg.Envelope.Cc)
+		}
 		msgs = append(msgs, *msg)
 	}
 
 	return msgs, <-done
+}
+
+func decodeArrs(addrs []*imap.Address) []*imap.Address {
+	var arr []*imap.Address
+	for _, from := range addrs {
+		if bytes, err := decode(from.PersonalName); err == nil {
+			from.PersonalName = string(bytes)
+			arr = append(arr, from)
+		}
+	}
+	return arr
 }
 
 // http://superuser.com/questions/1082635/how-to-decode-this-seemingly-gbk-encoded-string/1082640
