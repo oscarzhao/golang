@@ -1,10 +1,14 @@
 package mail
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/mail"
 	"strings"
+	"time"
 
 	"github.com/axgle/mahonia"
 	"github.com/emersion/go-imap"
@@ -15,6 +19,15 @@ type MailClient struct {
 	addr string
 	user string
 	pass string
+}
+
+// Email is a complete mail
+type Email struct {
+	Date    time.Time `json:"date"`
+	From    string    `json:"from"`
+	To      string    `json:"to"`
+	Subject string    `json:"subject"`
+	Content []byte    `json:"content"`
 }
 
 func (mc *MailClient) ListMailBox() ([]imap.MailboxInfo, error) {
@@ -44,7 +57,7 @@ func (mc *MailClient) ListMailBox() ([]imap.MailboxInfo, error) {
 	return boxes, <-done
 }
 
-func (mc *MailClient) Receive(n uint32) ([]imap.Message, error) {
+func (mc *MailClient) ReceiveRaw(mailbox string, n uint32) ([]imap.Message, error) {
 	// Connect to server
 	c, err := client.DialTLS(mc.addr, nil)
 	if err != nil {
@@ -58,11 +71,11 @@ func (mc *MailClient) Receive(n uint32) ([]imap.Message, error) {
 	defer c.Logout()
 
 	// Select INBOX
-	mbox, err := c.Select("INBOX", false)
+	mbox, err := c.Select(mailbox, false)
 	if err != nil {
 		return nil, err
 	}
-	log.Println("Flags for INBOX:", mbox.Flags)
+	log.Printf("Flags for %s:%v\n", mailbox, mbox.Flags)
 
 	// Get the last 4 messages
 	seqset, _ := imap.NewSeqSet("")
@@ -78,7 +91,7 @@ func (mc *MailClient) Receive(n uint32) ([]imap.Message, error) {
 	done := make(chan error, 1)
 	go func() {
 		// done <- c.Fetch(seqset, []string{imap.EnvelopeMsgAttr, imap.BodyMsgAttr, imap.SizeMsgAttr}, messages)
-		done <- c.Fetch(seqset, []string{imap.BodyMsgAttr, imap.EnvelopeMsgAttr, imap.BodyStructureMsgAttr}, messages)
+		done <- c.Fetch(seqset, []string{ /*imap.BodyMsgAttr, */ imap.EnvelopeMsgAttr, imap.BodyStructureMsgAttr, "BODY.PEEK[]<0.8>"}, messages)
 	}()
 
 	var msgs []imap.Message
@@ -97,6 +110,51 @@ func (mc *MailClient) Receive(n uint32) ([]imap.Message, error) {
 	}
 
 	return msgs, <-done
+}
+
+// ListMails lists parsed mails and errors
+func (mc *MailClient) ListMails(mailbox string, n uint32) ([]Email, []error) {
+	rawMessages, err := mc.ReceiveRaw(mailbox, n)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	var emails []Email
+	var errs []error
+	for _, m := range rawMessages {
+		for sectionName, literal := range m.Body {
+			fmt.Printf("sectionName: %v, content length:%d\n", sectionName.String(), literal.Len())
+			r := bytes.NewReader(literal.Bytes())
+			m, err := mail.ReadMessage(r)
+			if err != nil {
+				errs = append(errs, err)
+				continue
+			}
+
+			// parse header
+			header := m.Header
+
+			email := Email{
+				From:    header.Get("From"),
+				To:      header.Get("To"),
+				Subject: header.Get("Subject"),
+			}
+			email.Date, err = time.Parse(time.RFC1123Z, header.Get("Date"))
+			if err != nil {
+				errs = append(errs, err)
+				continue
+			}
+
+			email.Content, err = ioutil.ReadAll(m.Body)
+			if err != nil {
+				log.Printf("fails to read mail body, error:%s\n", err)
+				errs = append(errs, err)
+				continue
+			}
+			emails = append(emails, email)
+		}
+	}
+	return emails, errs
 }
 
 func decodeArrs(addrs []*imap.Address) []*imap.Address {
