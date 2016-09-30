@@ -3,6 +3,8 @@ package mail
 import (
 	// "encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -61,7 +63,7 @@ func TestListBoxes(t *testing.T) {
 // }
 
 func TestListMails(t *testing.T) {
-	num := uint32(9)
+	num := uint32(12)
 	mc := MailClient{
 		addr: fmt.Sprintf("%s:%d", ImapHost, ImapPortSecure),
 		user: User,
@@ -73,6 +75,9 @@ func TestListMails(t *testing.T) {
 		t.Fatalf("list mail box fails, error:%v\n", errs)
 	}
 	for _, m := range messages {
-		t.Logf("\nSubject: %s, From: %s, Date:%s\nContent:\n%s\n", m.Subject, m.From, m.Date, m.Content)
+		t.Logf("\nSubject: %s, From: %s, Date:%s\n", m.Subject, m.From, m.Date)
+		// t.Logf("content:%s\n", m.Content)
+		// fmt.Println(m.Content)
+		ioutil.WriteFile(m.Subject+".data", []byte(m.Content), os.ModeAppend)
 	}
 }

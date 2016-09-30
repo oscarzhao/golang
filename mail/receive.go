@@ -2,15 +2,12 @@ package mail
 
 import (
 	"bytes"
-	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/mail"
-	"strings"
 	"time"
 
-	"github.com/axgle/mahonia"
 	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/client"
 )
@@ -27,7 +24,7 @@ type Email struct {
 	From    string    `json:"from"`
 	To      string    `json:"to"`
 	Subject string    `json:"subject"`
-	Content []byte    `json:"content"`
+	Content string    `json:"content"`
 }
 
 func (mc *MailClient) ListMailBox() ([]imap.MailboxInfo, error) {
@@ -122,8 +119,8 @@ func (mc *MailClient) ListMails(mailbox string, n uint32) ([]Email, []error) {
 	var emails []Email
 	var errs []error
 	for _, m := range rawMessages {
-		for sectionName, literal := range m.Body {
-			fmt.Printf("sectionName: %v, content length:%d\n", sectionName.String(), literal.Len())
+		for _, literal := range m.Body {
+			// fmt.Printf("sectionName: %v, content length:%d\n", sectionName.String(), literal.Len())
 			r := bytes.NewReader(literal.Bytes())
 			m, err := mail.ReadMessage(r)
 			if err != nil {
@@ -139,18 +136,45 @@ func (mc *MailClient) ListMails(mailbox string, n uint32) ([]Email, []error) {
 				To:      header.Get("To"),
 				Subject: header.Get("Subject"),
 			}
+
+			email.From, err = decode(email.From)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("decode from %s failed, error:%s\n", email.From, err))
+			}
+
+			email.To, err = decode(email.To)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("decode email to %s, failed, error:%s", email.To, err))
+			}
+
+			email.Subject, err = decode(email.Subject)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("decode subject %s failed, error:%s\n", email.Subject, err))
+			}
+
 			email.Date, err = time.Parse(time.RFC1123Z, header.Get("Date"))
+			if err != nil {
+				email.Date, err = time.Parse(time.RFC1123, header.Get("Date"))
+			}
+
 			if err != nil {
 				errs = append(errs, err)
 				continue
 			}
 
-			email.Content, err = ioutil.ReadAll(m.Body)
+			contentBytes, err := ioutil.ReadAll(m.Body)
 			if err != nil {
 				log.Printf("fails to read mail body, error:%s\n", err)
 				errs = append(errs, err)
 				continue
 			}
+
+			email.Content = string(contentBytes)
+			email.Content, err = decode(email.Content)
+			if err != nil {
+				log.Printf("fails to decode body:%s\nerror:%s\n", email.Content, err)
+			}
+			// fmt.Printf("email: sub:%s, content:%s\n", email.Subject, email.Content)
 			emails = append(emails, email)
 		}
 	}
@@ -160,32 +184,10 @@ func (mc *MailClient) ListMails(mailbox string, n uint32) ([]Email, []error) {
 func decodeArrs(addrs []*imap.Address) []*imap.Address {
 	var arr []*imap.Address
 	for _, from := range addrs {
-		if bytes, err := decode(from.PersonalName); err == nil {
-			from.PersonalName = string(bytes)
+		if str, err := decode(from.PersonalName); err == nil {
+			from.PersonalName = str
 			arr = append(arr, from)
 		}
 	}
 	return arr
-}
-
-// http://superuser.com/questions/1082635/how-to-decode-this-seemingly-gbk-encoded-string/1082640
-func decode(encoded string) ([]byte, error) {
-	arr := strings.Split(encoded, "?")
-	if len(arr) == 1 {
-		encoded = arr[0]
-	} else if len(arr) == 5 {
-		// charset := arr[1]
-		// encoding := arr[2]
-		encoded = arr[3]
-	} else {
-		return nil, fmt.Errorf("invalid input format: %s", encoded)
-	}
-
-	rawbytes, err := base64.StdEncoding.DecodeString(encoded)
-	if err != nil {
-		return nil, err
-	}
-
-	enc := mahonia.NewDecoder("gbk")
-	return []byte(enc.ConvertString(string(rawbytes))), nil
 }

@@ -16,7 +16,7 @@ const (
 	Smtpport       = 25                   // send mail
 	Identity       = "Oscar"
 	User           = "shuailong@tenxcloud.com"
-	Pass           = "xxx"
+	Pass           = "xue1227xue"
 )
 
 // SendMail enables a user to send mail to any mails
