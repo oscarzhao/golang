@@ -16,6 +16,7 @@ type Field struct {
 }
 
 // ParseStructInfo parses a certain pointer value and return its swagger info
+// pointer is ignored
 func ParseStructInfo(ifc interface{}) ([]Field, error) {
 	typ := reflect.TypeOf(ifc)
 	if typ.Kind() != reflect.Ptr || typ.Elem().Kind() != reflect.Struct {
@@ -29,8 +30,13 @@ func ParseStructInfo(ifc interface{}) ([]Field, error) {
 
 		var info Field
 		info.Name = field.Name
-		info.Type = field.Type.String()
 		info.JSONName = field.Tag.Get("json")
+
+		if field.Type.Kind() == reflect.Ptr {
+			info.Type = field.Type.Elem().String()
+		} else {
+			info.Type = field.Type.String()
+		}
 
 		swaggerTag := field.Tag.Get("swagger")
 		items := strings.Split(swaggerTag, ",")
