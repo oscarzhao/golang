@@ -130,7 +130,13 @@ func parseStructType(typ reflect.Type) (*Field, error) {
 			info.Kind = field.Type.Kind().String()
 		}
 
-		if field.Type == typ || field.Type == originTyp {
+		var fieldType reflect.Type
+		if field.Type.Kind() == reflect.Ptr {
+			fieldType = field.Type.Elem()
+		} else {
+			fieldType = field.Type
+		}
+		if fieldType == typ || fieldType == originTyp {
 			return nil, fmt.Errorf("nested type declaration, field type:%s, origin type: %s", field.Type, originTyp)
 		}
 
