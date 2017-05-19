@@ -63,3 +63,22 @@ func TestParseStructTag(t *testing.T) {
 	assert.Equal(t, "time.Time", field.Fields[5].Type, "test Created")
 	assert.Equal(t, "created", field.Fields[5].JSONName, "test Created")
 }
+
+func TestParseNestedStruct(t *testing.T) {
+	// A ...
+	type A struct {
+		ID  int64 `json:"id" swagger:"Required, I'm ID"`
+		Foo *A    `json:"foo" swagger:"Required, I'm Foo in A"`
+	}
+
+	a := &A{}
+	_, err := Parse(reflect.TypeOf(a))
+	assert.NotNil(t, err, "test nested struct A")
+
+	type B struct {
+		Foo A `json:"foo" swagger:"Required, I'm Foo in B"`
+	}
+	b := &B{}
+	_, err = Parse(reflect.TypeOf(b))
+	assert.NotNil(t, err, "test struct B which contains a nested A")
+}

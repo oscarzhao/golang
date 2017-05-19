@@ -131,6 +131,10 @@ func parseStructType(typ reflect.Type) (*Field, error) {
 			info.Kind = field.Type.Kind().String()
 		}
 
+		if field.Type == originTyp {
+			return nil, fmt.Errorf("found nested type declaration, type name: %s", originTyp)
+		}
+
 		// calculate swagger info
 		swaggerTag := field.Tag.Get("swagger")
 		items := strings.Split(swaggerTag, ",")
