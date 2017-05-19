@@ -11,9 +11,9 @@ import (
 
 func TestParseStructTag(t *testing.T) {
 	type Crime struct {
-		Time      time.Time `json:"time" swagger:"Required, the time crime is committed"`
-		Place     string    `json:"place" swagger:"Required, the place where crime is committed"`
-		Serverity int8      `json:"serverity" swagger:"Required, the serverity of the crime"`
+		Time     time.Time `json:"time" swagger:"Required, the time crime is committed"`
+		Place    string    `json:"place" swagger:"Required, the place where crime is committed"`
+		Severity int8      `json:"severity" swagger:"Required, the severity of the crime"`
 	}
 	// Person ...
 	type Person struct {
@@ -48,6 +48,16 @@ func TestParseStructTag(t *testing.T) {
 	assert.Equal(t, "slice", field.Fields[4].Kind, "test CrimeHistory")
 	assert.Equal(t, "[]structparser.Crime", field.Fields[4].Type, "test CrimeHistory")
 	assert.Equal(t, "crimeHistory", field.Fields[4].JSONName, "test CrimeHistory")
+
+	crimeHistoryList := field.Fields[4]
+	assert.Equal(t, 1, len(crimeHistoryList.Fields), "test field count of []Crime")
+
+	crimeHistoryInfo := crimeHistoryList.Fields[0]
+
+	assert.Equal(t, 3, len(crimeHistoryInfo.Fields), "test fields count of Crime")
+	assert.Equal(t, "int8", crimeHistoryInfo.Fields[2].Kind)
+	assert.Equal(t, "int8", crimeHistoryInfo.Fields[2].Type)
+	assert.Equal(t, "severity", crimeHistoryInfo.Fields[2].JSONName)
 
 	assert.Equal(t, "struct", field.Fields[5].Kind, "test Created")
 	assert.Equal(t, "time.Time", field.Fields[5].Type, "test Created")
