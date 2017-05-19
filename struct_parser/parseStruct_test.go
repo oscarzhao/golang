@@ -1,10 +1,9 @@
 package structparser
 
 import (
+	"reflect"
 	"testing"
 	"time"
-
-	"reflect"
 
 	"github.com/stretchr/testify/assert"
 )

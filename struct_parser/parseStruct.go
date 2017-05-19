@@ -2,7 +2,6 @@ package structparser
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 	"time"
@@ -39,7 +38,7 @@ func Parse(typ reflect.Type) (*Field, error) {
 	}
 	parser, ok := getParser(typ)
 	if !ok {
-		log.Printf("Parse, cannot find parser; got %s", originTyp)
+		fmt.Printf("Parse, cannot find parser; got %s", originTyp)
 		return nil, fmt.Errorf("cannot find parser func; got %s", originTyp)
 	}
 	return parser(typ)
