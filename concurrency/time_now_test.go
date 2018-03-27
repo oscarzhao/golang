@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Benchmark test for time.Now()
 // under linux, expected 40-50 ns/op
 // under macos, expected 700-800 ns/op
 func BenchmarkTimeNow(b *testing.B) {
